@@ -2111,7 +2111,7 @@ app.get('/admin/home', async (req, res) => {
 
 
 
-    res.render('AdminHome', { sellerno : total_seller, customerno: total_customer, productno: total_product, 
+    res.render('AdminPanel', { sellerno : total_seller, customerno: total_customer, productno: total_product, 
         orderno: total_order, products: products , 
         customers: customers, sellers: sellers , orders: orders, logs: logs, logno: logtotal});
 });

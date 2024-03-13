@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Total Users Card -->
+            <div class="card text-white bg-primary mb-3" data-toggle="modal" data-target="#totalUsersModal">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Total products</h5>
+                    <p class="card-text text-center">
+                        <%= productno %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Other cards remain the same -->
+    </div>
+    <!-- Total Users Modal -->
+    <div class="modal fade" id="totalUsersModal"  tabindex="-1" role="dialog" aria-labelledby="totalUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="width: 50vw; " role="document">
+        <div class="modal-content" style="width: 50vw;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="totalUsersModalLabel">Total Users</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be dynamically inserted here -->
+            <h1>Products</h1>
+      <table class="table table-striped table-hover table-bordered">
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Product Image</th>
+            <th>Product Name</th>
+            <th>Product Price</th>
+            <th>Product Quantity</th>
+            <th>Product Catagory</th>
+            <th> Shop Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for (var i = 0; i < products.length; i++) { %>
+            <tr>
+              <td><%= products[i].PRODUCT_ID %></td>
+              <td><img src="../images/product/<%= products[i].PRODUCT_IMAGE %>" alt="Product Image" style="width: 100px; height: 100px;"></td>
+              <td><%= products[i].PRODUCT_NAME %></td>
+              <td><%= products[i].PRICE %></td>
+              <td><%= products[i].STOCK_QUANTITY %></td>
+              <td><%= products[i].CATAGORY_NAME %></td>
+              <td><%= products[i].SHOP_NAME %></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+
+
+                            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Total Users Card -->
+            <div class="card text-white bg-primary mb-3" data-toggle="modal" data-target="#OrderModal">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Total Users</h5>
+                    <p class="card-text text-center">
+                        <%= orderno %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Other cards remain the same -->
+    </div>
+    <!-- Total Users Modal -->
+    <div class="modal fade" id="OrderModal" tabindex="-1" role="dialog" aria-labelledby="OrderModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 40vw;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="OrderModalLabel">Total Users</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be dynamically inserted here -->
+            <h1>Products</h1>
+            <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer ID</th>
+                    <th>Product ID</th>
+                    <th>Order Date</th>
+                    <th>Order Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for (var i = 0; i < orders.length; i++) { %>
+                    <tr>
+                      <td><%= orders[i].ORDER_ID %></td>
+                      <td><%= orders[i].USER_ID %></td>
+                      <td><%= orders[i].PRODUCT_ID %></td>
+                      <td><%= orders[i].CONFIRMATION_TIME %></td>
+                      <td><%= orders[i].DELIVERY_STATUS %></td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- Total Users Card -->
+        <div class="card text-white bg-primary mb-3" data-toggle="modal" data-target="#SellerModal">
+            <div class="card-body">
+                <h5 class="card-title text-center">Total Sellers</h5>
+                <p class="card-text text-center">
+                    <%= sellerno %>
+                </p>
+                </div>
+                </div>
+                </div>
+
+                <!-- Total Users Modal -->
+                <div class="modal fade" id="SellerModal" tabindex="-1" role="dialog" aria-labelledby="SellerModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content" style="width: 40vw;">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="SellerModalLabel">Total Sellers</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Content will be dynamically inserted here -->
+                        <h1>Sellers</h1>
+                        <table class="table table-striped">
+                            <thead>
+                              <tr>
+                                <th>Seller ID</th>
+                                <th>Seller Name</th>
+                                <th>Seller Email</th>
+                                <th>Seller Phone</th>
+                                <th>Seller Revenue</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% for (var i = 0; i < sellers.length; i++) { %>
+                                <tr>
+                                  <td><%= sellers[i].SHOP_ID %></td>
+                                  <td><%= sellers[i].SHOP_NAME %></td>
+                                  <td><%= sellers[i].EMAIL %></td>
+                                  <td><%= sellers[i].PHONE %></td>
+                                  <td><%= sellers[i].TOTAL_REVENUE %></td>
+                                </tr>
+                              <% } %>
+                            </tbody>
+                        </table>
+                         
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    <div class="row">
+    <div class="col-md-4">
+        <!-- Total Users Card -->
+        <div class="card text-white bg-primary mb-4" data-toggle="modal" data-target="#CustomerModal">
+            <div class="card-body">
+                <h5 class="card-title text-center">Total Customers</h5>
+                <p class="card-text text-center">
+                    <%= customerno %>
+                </p>
+            </div>
+            </div>
+        </div>
+        <!-- Total Users Modal -->
+        <div class="modal fade" id="CustomerModal" tabindex="-1" role="dialog" aria-labelledby="CustomerModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 50vw;">
+              <div class="modal-header">
+                <h5 class="modal-title" id="CustomerModalLabel">Total Customers</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <!-- Content will be dynamically inserted here -->
+                <h1>Customers</h1>
+                <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Customer ID</th>
+                        <th>Customer Name</th>
+                        <th>Customer Email</th>
+                        <th>Customer Phone</th>
+                        <th>Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (var i = 0; i < customers.length; i++) { %>
+                          <tr>
+                            <td><%= customers[i].USER_ID %></td>
+                            <td><%= customers[i].NAME %></td>
+                            <td><%= customers[i].EMAIL %></td>
+                            <td><%= customers[i].PHONE %></td>
+                            <td><%= customers[i].DATE_JOINED %></td>
+                            <td><%= customers[i].GENDER %></td>
+                          </tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
