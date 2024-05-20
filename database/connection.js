@@ -9,7 +9,7 @@ async function db_query(query , params){
             user: 'VMART_VENTURES',
             password: '123',
             // connectString: 'localhost/orcl'
-            connectString: 'localhost/orcldb'
+            connectString: 'localhost/oracle'
             
         });
         console.log("connected to database");

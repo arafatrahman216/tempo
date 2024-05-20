@@ -962,6 +962,8 @@ app.get('/order/:userid', async (req, res) => {
     ) AS QUANTITY,
     O.TOTAL_PRICE,
     O.PAYMENT_TYPE,
+    (SELECT COUNT(*) FROM REVIEWS R WHERE R.PRODUCT_ID = O.PRODUCT_ID AND R.USER_ID = O.USER_ID AND R.REVIEW_ID = O.ORDER_ID) 
+    AS REVIEW_COUNT,
     (SELECT PROFILE_PICTURE FROM CUSTOMER_USER CUS WHERE O.USER_ID = CUS.USER_ID) AS PROFILE_PICTURE
 FROM 
     ORDERS O 
@@ -1189,7 +1191,7 @@ app.post('/ShopOwnerSignup', async (req, res) => {
 
     const procedure = 'SignupInsertion';
 
-    const password = parseInt(req.body.password);
+    const password = req.body.password;
 
     const query = 
     `BEGIN 
@@ -1208,6 +1210,7 @@ app.post('/ShopOwnerSignup', async (req, res) => {
         division: req.body.division,
         shoplogo: req.body.shoplogo
     }
+    console.log(req.body);
 
     const result = await db_query(query, params);
 
@@ -1220,8 +1223,15 @@ app.post('/ShopOwnerSignup', async (req, res) => {
     };
  
     const r = await db_query(query1,params1); 
+    var shop_image = req.body.shoplogo;
+    console.log(r[0]);
+    if (r[0]!=null)
+    {
+        shop_image = r[0].SHOP_LOGO;
+    }
 
-    res.render('newShopOwnerProfile', { PROFILE_PICTURE: r[0].SHOP_LOGO , SHOP_ID: r[0].SHOP_ID, PHONE : r[0].PHONE, EMAIL : r[0].EMAIL , SHOP_NAME: r[0].SHOP_NAME , DESCRIPTION: r[0].DESCRIPTION ,TOTAL_REVENUE : r[0].TOTAL_REVENUE});
+
+    res.render('newShopOwnerProfile', { PROFILE_PICTURE: shop_image , SHOP_ID: r[0].SHOP_ID, PHONE : r[0].PHONE, EMAIL : r[0].EMAIL , SHOP_NAME: r[0].SHOP_NAME , DESCRIPTION: r[0].DESCRIPTION ,TOTAL_REVENUE : r[0].TOTAL_REVENUE});
 
 });
 
@@ -1278,13 +1288,14 @@ app.post('/addproducts/:shopname/:shopid', async (req, res) => {
     // };
 
     // const DiscountQueryresult = await db_query(addDiscountQuery, params4);
- 
+    console.log(Category);
     const CategoryIdQuery = `SELECT CATAGORY_ID FROM CATAGORY WHERE CATAGORY_NAME = :Category`;
     const params2 = {
         Category: Category
     }
-    const CategoryIdResult = await db_query(CategoryIdQuery, params2);
 
+    const CategoryIdResult = await db_query(CategoryIdQuery, params2);
+    console.log(CategoryIdResult);
     const CategoryId = CategoryIdResult[0].CATAGORY_ID;
     console.log(CategoryId);
 
@@ -2087,7 +2098,10 @@ app.get('/admin/home', async (req, res) => {
     query = `SELECT COUNT(*) AS TOTAL_ORDER FROM ORDERS`;
     result = await db_query(query,[]);
     var total_order= result[0].TOTAL_ORDER;
-    query = `SELECT P.PRODUCT_ID , P.PRODUCT_NAME , C.CATAGORY_NAME , P.PRICE , P.STOCK_QUANTITY , S.SHOP_NAME , P.PRODUCT_IMAGE,P.PROMO_CODE
+    query = `SELECT P.PRODUCT_ID , P.PRODUCT_NAME , C.CATAGORY_NAME , P.PRICE , P.STOCK_QUANTITY , S.SHOP_NAME , P.PRODUCT_IMAGE,P.PROMO_CODE,
+    (SELECT COUNT(*) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_COUNT,
+    (SELECT NVL(ROUND(AVG(RATING),2),0) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS AVERAGE_RATING,
+    (SELECT COUNT(*) FROM ORDERS O WHERE O.PRODUCT_ID = P.PRODUCT_ID) AS ORDER_COUNT
     FROM PRODUCTS P JOIN CATAGORY C ON P.CATAGORY_ID = C.CATAGORY_ID JOIN SELLER_USER S ON P.SHOP_ID = S.SHOP_ID ORDER BY P.PRODUCT_ID`;
     result = await db_query(query,[]);
     var products = result;
@@ -2102,7 +2116,8 @@ app.get('/admin/home', async (req, res) => {
     result = await db_query(query,[]);
     var orders = result;
     query = `SELECT * FROM LOG_TABLE ORDER BY CALL_TIME DESC`;
-    result = await db_query(query,[]);
+    result 
+    = await db_query(query,[]);
     var logs = result;
     query= `SELECT COUNT(*) AS LOGTOTAL FROM LOG_TABLE`;
     result = await db_query(query,[]);
@@ -2111,7 +2126,7 @@ app.get('/admin/home', async (req, res) => {
 
 
 
-    res.render('AdminPanel', { sellerno : total_seller, customerno: total_customer, productno: total_product, 
+    res.render('AdminHome', { sellerno : total_seller, customerno: total_customer, productno: total_product, 
         orderno: total_order, products: products , 
         customers: customers, sellers: sellers , orders: orders, logs: logs, logno: logtotal});
 });

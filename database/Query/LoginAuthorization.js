@@ -51,7 +51,7 @@ const Seller_authorize= async (email, password)=>{
     console.log('in seller authorize');
     console.log(email);
     console.log(password);
-    const query= `SELECT * FROM SELLER_USER WHERE EMAIL LIKE \'${email}\' AND PASSWORD = \'${password}\'`;  
+    const query= `SELECT * FROM SELLER_USER WHERE EMAIL LIKE \'${email}\' AND PASSWORD = ORA_HASH(\'${password}\')`;  
     console.log(query);  
     const params=[];
     const r= await db_query(query,params);

@@ -29,8 +29,12 @@
             <th>Product Image</th>
             <th>Product Name</th>
             <th>Product Price</th>
-            <th>Product Quantity</th>
-            <th>Product Description</th>
+            <th>Stock Quantity</th>
+            <th>Product Catagory</th>
+            <th> Shop Name</th>
+            <th>No of Reviews</th>
+            <th>Rating</th>
+            <th>No of Sales</th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +45,11 @@
               <td><%= products[i].PRODUCT_NAME %></td>
               <td><%= products[i].PRICE %></td>
               <td><%= products[i].STOCK_QUANTITY %></td>
-              <td><%= products[i].DESCRIPTION %></td>
+              <td><%= products[i].CATAGORY_NAME %></td>
+              <td><%= products[i].SHOP_NAME %></td>
+              <td><%= products[i].REVIEW_COUNT %></td>
+              <td><%= products[i].AVERAGE_RATING %></td>
+              <td><%= products[i].ORDER_COUNT %></td>
             </tr>
           <% } %>
         </tbody>
@@ -139,7 +147,7 @@
             <% for (var i = 0; i < logs.length; i++) { %>
               <tr>
                 <td><%= logs[i].FUNCTION_NAME %></td>
-                <td><%= logs[i].USER %></td>
+                <td><%= logs[i].USER_NAME %></td>
                 <td><%= logs[i].CALL_TIME %></td>
               </tr>
             <% } %>
@@ -179,7 +187,7 @@
       document.getElementsByClassName('productstable')[0].style.display = 'block';
       document.getElementsByClassName('productstable')[1].style.display = 'none';
       document.getElementsByClassName('productstable')[2].style.display = 'none';
-      document.getElementsByClassName('productstable')[3].style.display = 'block';
+      document.getElementsByClassName('productstable')[3].style.display = 'none';
       document.getElementsByClassName('productstable')[4].style.display = 'none';
 
     }

@@ -1,102 +1,281 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="../styles/OrderStyle.css">
-</head>
-<header>
-  <h1>Your Order Has Been Received !</h1>
-  <h3>Thank you for having us</h3>
-</header>
-<body>
-<div class="container">
-  <div class="heading">
-    <div class="odetails-1">
-      <p><b>Order</b></p>
-      <p>ORDER_ID # userid </p>
-    </div>
-    <div class="odetails-2">
-      <p>Order Placed: CONFIRMATION_TIME </p>
-    </div>
-    <button onclick="backtohome()"><i class="fa-solid fa-location-crosshairs" ></i>
-      
-      <p>Continue Shopping</p>
-    </button>
-    <script>
-      async function backtohome() {
-        window.location.href = "/home/1";
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon</title>
+  <style>
+    /* Reset styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    /* Header styles */
+    .header {
+      background-color: #232f3e;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header__container {
+      display: flex;
+      align-items: center;
+    }
+
+    .header__logo img {
+      width: 100px;
+    }
+
+    .header__search {
+      margin-right: 20px;
+    }
+
+    .header__search input {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .header__search button {
+      padding: 5px 10px;
+      background-color: #f0c14b;
+      border: none;
+      border-radius: 5px;
+      color: #111;
+      cursor: pointer;
+    }
+
+    .header__links {
+      display: flex;
+      align-items: center;
+    }
+
+    .header__links a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 20px;
+      position: relative;
+    }
+
+    .header__links a:hover {
+      color: #f0c14b;
+    }
+
+    /* Dropdown */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #232f3e;
+      min-width: 120px;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .header__links:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content a {
+      color: #fff;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f0c14b;
+    }
+
+    /* Animation */
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
       }
-      </script>
-  </div>
-  <hr>
-  <div class="card-container">
-    <div class="card">
-      <div class="img">
-        <img src="../images/product/product1.jpg" alt="1">
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      animation: slideIn 0.5s;
+    }
+
+    /* Navigation styles */
+    .nav {
+      background-color: #333;
+      padding: 10px 20px;
+    }
+
+    .nav__list {
+      list-style: none;
+      display: flex;
+    }
+
+    .nav__list li {
+      margin-right: 20px;
+    }
+
+    .nav__list li a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    /* Hero section styles */
+    .hero img {
+      width: 100%;
+    }
+
+    /* Products section styles */
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .product-card {
+      width: 200px;
+      margin: 10px;
+    }
+
+    .product-card img {
+      width: 100%;
+    }
+
+    .product-card h3 {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    .product-card p {
+      font-weight: bold;
+    }
+
+    /* Footer styles */
+    .footer {
+      background-color: #232f3e;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__container">
+      <div class="header__logo">
+        <img src="../images/login/vmart_ventures_main_black_poster.jpeg" alt="Amazon Logo">
       </div>
-      <div class="parent">
-        <div class="content">
-          <div class="details-1">
-            <h1>PRODUCT_NAME</h1>
-            <p>By SELLER_NAME</p>
-          </div>
-          <div class="details-2">
-            <p>Qty: QUANTITY </p>
-            <br>
-            <b>$ TOTAL_PRICE </b>
+      <div class="header__search">
+        <input type="text" placeholder="Search">
+        <button>Search</button>
+      </div>
+      <div class="header__links">
+        <a href="#" onclick="openModal('signInModal')">Sign In</a>
+        <div id="signInModal" class="modal">
+          <div class="modal-content">
+            <button onclick="closeModal('signInModal')"  class="btn-primary">close</button>
+            <p style="color: #111;">This is the Sign In modal.</p>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password">
+            <button class="btn-primary">Sign In</button>
+            
           </div>
         </div>
-        <div class="status">
-          <div class="sec1">
-            <p>Status</p>
-            <h2>DELIVERY_STATUS</h2>
+        <a href="#" onclick="openModal('ordersModal')">Orders</a>
+        <div id="ordersModal" class="modal">
+          <div class="modal-content">
+            <span onclick="closeModal('ordersModal')" style="cursor: pointer;">&times;</span>
+            <p>This is the Orders modal.</p>
           </div>
-          <div class="sec2">
-            <p>Delivery Expected By</p>
-            <h3><span id="dl_date"></span></h3>
+        </div>
+        <a href="#" onclick="openModal('cartModal')">Cart</a>
+        <div id="cartModal" class="modal">
+          <div class="modal-content">
+            <span onclick="closeModal('cartModal')" style="cursor: pointer;">&times;</span>
+            <p>This is the Cart modal.</p>
           </div>
         </div>
       </div>
-      
     </div>
-    <hr>
-    <button onclick="cancelorder()" id="cancelorder-btn">Cancel Order</button>
-    <div class="card-bottom">
-  </div>
-  <div id="total">
-    <p>Total</p>
-    <p>$455</p>
-  </div>
-</div>
-    
-    <script>
-    $(document).ready(function () {
-      $(".card").click(function () {
-        $(this).toggleClass("toggle");
-      });
-    });
-    var confirmationDate = new Date();
-    var deliveryDate = new Date(confirmationDate);
-    deliveryDate.setDate(deliveryDate.getDate() + 7);
-    document.getElementById('dl_date').innerHTML = deliveryDate.toDateString();
-    
-    async function cancelorder(){
-      var orderid = '1';
-      var userid = 1;
-      var url = '/cancelorder/1';
-      console.log(url);
-      //   var response = await fetch(url, {
-        //     method: 'GET'
-        // }).then(response => response.json()).then(data => {
-          //   if(data.status == 'success'){
-            //     alert('Order Cancelled');
-            //     window.location.href = '/home/<%= userid %>';
-            //   }
-            // });
-          }
+  </header>
+  
+  <nav class="nav">
+    <ul class="nav__list">
+      <li><a href="#">Best Sellers</a></li>
+      <li><a href="#">Customer Service</a></li>
+      <li><a href="#">Prime</a></li>
+      <li><a href="#">New Releases</a></li>
+      <li><a href="#">Fashion</a></li>
+    </ul>
+  </nav>
+  
+  <section class="hero">
+    <img src="../images/home/bg1.jpg" alt="Hero Image">
+  </section>
+  
+  <section class="products">
+    <!-- Product Cards -->
+    <div class="product-card">
+      <img src="../images/product/product1.jpg" alt="Product 1">
+      <h3>Product 1</h3>
+      <p>$19.99</p>
+    </div>
+    <div class="product-card">
+      <img src="../images/product/product2.png" alt="Product 2">
+      <h3>Product 2</h3>
+      <p>$29.99</p>
+    </div>
+    <!-- More Product Cards -->
+  </section>
+  
+  <footer class="footer">
+    <div class="footer__links">
+      <a href="#">Conditions of Use</a>
+      <a href="#">Privacy Notice</a>
+      <a href="#">Interest-Based Ads</a>
+    </div>
+    <p>&copy; 2022 Amazon.com, Inc. or its affiliates</p>
+  </footer>
 
-          </script>
+  <script>
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
+    }
 
-
-</div>
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    }
+  </script>
 </body>
 </html>

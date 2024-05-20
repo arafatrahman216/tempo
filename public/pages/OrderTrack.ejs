@@ -31,7 +31,7 @@
             box-shadow: 5px 5px 5px 3px rgba(2, 4, 0, 0.1); /* Box shadow for the glass effect */
             backdrop-filter: blur(1000px); /* Blur for the frosted glass effect */
             overflow: hidden; /* Ensure the content does not overflow outside the glass-box */
-            border-radius: 10%;
+            border-radius: 50px;
         }
 
         .sidebar {
@@ -107,7 +107,7 @@
         <div class="OrderTrack-table">
             <h2 class="HeadLine1">Last Order Update</h2>
             <h4 class="HeadLine2">Order ID: <%= OrderTrack[0].ORDER_ID%> </h4>
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>PRODUCT_NAME</th>

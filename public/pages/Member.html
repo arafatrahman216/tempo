@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Member Accounts</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            animation: fadeInBody 1s ease-in-out;
+        }
+
+        @keyframes fadeInBody {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        h1, h2 {
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px 0 40px;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: fadeInTable 1s ease-in-out;
+        }
+
+        @keyframes fadeInTable {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        table th, table td {
+            padding: 15px;
+            text-align: left;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        table td {
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        table tr:hover td {
+            background-color: #f1f1f1;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Member Accounts</h1>
+    <table id="membersTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>NID</th>
+                <th>Father's Name</th>
+                <th>Address</th>
+                <th>Photo</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamically populated -->
+        </tbody>
+    </table>
+
+    <!-- Member Details Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Member Details</h2>
+            <img id="memberPhoto" src="" alt="Member Photo" style="width: 100px; height: 100px; border-radius: 50%;">
+            <p><strong>Name:</strong> <span id="memberName"></span></p>
+            <p><strong>Age:</strong> <span id="memberAge"></span></p>
+            <p><strong>NID:</strong> <span id="memberNID"></span></p>
+            <p><strong>Father's Name:</strong> <span id="memberFather"></span></p>
+            <p><strong>Address:</strong> <span id="memberAddress"></span></p>
+            <h3>Accounts</h3>
+            <table id="accountsTable">
+                <thead>
+                    <tr>
+                        <th>Account Number</th>
+                        <th>Nominee</th>
+                        <th>Type</th>
+                        <th>Total Amount</th>
+                        <th>Due Amount</th>
+                        <th>Creation Date</th>
+                        <th>Years Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Account Transactions Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Transaction Details</h2>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Transaction Type</th>
+                        <th>Amount</th>
+                        <th>Running Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const members = [
+            {
+                name: 'John Doe',
+                age: 30,
+                nid: '123456789',
+                photo: 'https://via.placeholder.com/100',
+                father_name: 'Richard Doe',
+                address: '123 Main St',
+                accounts: [
+                    {
+                        number: 'ACC123',
+                        nominee: 'Jane Doe',
+                        type: 'Savings',
+                        total: 5000,
+                        due: 0,
+                        creationDate: '2020-01-01',
+                        yearsActive: 4,
+                        transactions: [
+                            { date: '2023-01-01', type: 'credit', amount: 500, balance: 5500 },
+                            { date: '2023-02-01',type: 'debit', amount: -1000, balance: 4500 },
+                            { date: '2023-03-01',type: 'credit', amount: 1000, balance: 5500 }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'Jane Doe',
+                age: 25,
+                nid: '987654321',
+                photo: 'https://via.placeholder.com/100',
+                father_name: 'John Doe',
+                address: '456 Elm St',
+                accounts: [
+                    {
+                        number: 'ACC456',
+                        nominee: 'John Doe',
+                        type: 'Current',
+                        total: 10000,
+                        due: 5000,
+                        creationDate: '2020-02-01',
+                        yearsActive: 3,
+                        transactions: [
+                            { date: '2023-01-01', type: 'credit', amount: 1000, balance: 11000 },
+                            { date: '2023-02-01',type: 'debit', amount: -500, balance: 10500 },
+                            { date: '2023-03-01',type: 'credit', amount: 500, balance: 11000 }
+                        ]
+                    }
+                ]
+            }
+            ,
+            {
+                name: 'Arafat Rahman',
+                age: 22,
+                nid: '123456789',
+                photo: '../images/UserProfile/arafatFB.jpg',
+                father_name: 'Jillur Rahman',
+                address: '123 Main St',
+                accounts: [
+                    {
+                        number: 'ACC123',
+                        nominee: 'Rawshan Ara',
+                        type: 'Savings',
+                        total: 200,
+                        due: 0,
+                        creationDate: '2024-05-01',
+                        yearsActive: 5,
+                        transactions: [
+                            { date: '2023-05-01', type: 'credit', amount: 280, balance: 280 },
+                            { date: '2023-05-03',type: 'debit', amount: -230, balance: 50 },
+                            { date: '2023-05-08',type: 'credit', amount: 200, balance: 250 }
+                        ]
+                    },
+                    {
+                        number: 'ACC124',
+                        nominee: 'Rawshan Ara',
+                        type: 'Loan',
+                        total: 5900000,
+                        due: 3200000,
+                        creationDate: '2020-05-01',
+                        yearsActive: 13,
+                        transactions: [
+                            { date: '2023-05-01', type: 'credit', amount: 75000, balance: 80000 },
+                            { date: '2023-05-03',type: 'debit', amount: -76000, balance: 4000 },
+                            { date: '2023-05-08',type: 'credit', amount: 150, balance: 4150 }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'Jane Dosse',
+                age: 25,
+                nid: '987654321',
+                photo: 'https://via.placeholder.com/100',
+                father_name: 'Johnww Doe',
+                address: '456 Elm St',
+                accounts: [
+                    {
+                        number: 'ACC456',
+                        nominee: 'Johwwn Doe',
+                        type: 'Current',
+                        total: 10000,
+                        due: 5000,
+                        creationDate: '2020-02-01',
+                        yearsActive: 3,
+                        transactions: [
+                            { date: '2023-01-01', type: 'credit', amount: 1000, balance: 11000 },
+                            { date: '2023-02-01',type: 'debit', amount: -500, balance: 10500 },
+                            { date: '2023-03-01',type: 'credit', amount: 500, balance: 11000 }
+                        ]
+                    }
+
+                ]
+            }
+        ];
+
+        function populateMembersTable() {
+            const tableBody = document.querySelector('#membersTable tbody');
+            tableBody.innerHTML = '';
+
+            members.forEach(member => {
+                const row = document.createElement('tr');
+                row.dataset.member = JSON.stringify(member);
+                row.innerHTML = `
+                    <td>${member.name}</td>
+                    <td>${member.age}</td>
+                    <td>${member.nid}</td>
+                    <td>${member.father_name}</td>
+                    <td>${member.address}</td>
+                    <td><img src="${member.photo}" alt="Photo" style="width: 50px; height: 50px; border-radius: 50%;"></td>
+                    <td><button class="viewDetailsButton">View Details</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showMemberModal(member) {
+            const memberModal = document.getElementById('memberModal');
+            const memberPhoto = document.getElementById('memberPhoto');
+            const memberName = document.getElementById('memberName');
+            const memberAge = document.getElementById('memberAge');
+            const memberNID = document.getElementById('memberNID');
+            const memberFather = document.getElementById('memberFather');
+            const memberAddress = document.getElementById('memberAddress');
+            const accountsTableBody = document.querySelector('#accountsTable tbody');
+
+            memberPhoto.src = member.photo;
+            memberName.textContent = member.name;
+            memberAge.textContent = member.age;
+            memberNID.textContent = member.nid;
+            memberFather.textContent = member.father_name;
+            memberAddress.textContent = member.address;
+
+            accountsTableBody.innerHTML = '';
+            member.accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.dataset.account = JSON.stringify(account);
+                row.innerHTML = `
+                    <td>${account.number}</td>
+                    <td>${account.nominee}</td>
+                    <td>${account.type}</td>
+                    <td>${account.total}</td>
+                    <td>${account.due}</td>
+                    <td>${account.creationDate}</td>
+                    <td>${account.yearsActive}</td>
+                `;
+                row.addEventListener('click', () => showTransactionModal(account));
+                accountsTableBody.appendChild(row);
+            });
+
+            memberModal.style.display = 'block';
+        }
+
+        function showTransactionModal(account) {
+            const transactionModal = document.getElementById('transactionModal');
+            const transactionsTableBody = document.querySelector('#transactionsTable tbody');
+
+            transactionsTableBody.innerHTML = '';
+            account.transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.amount}</td>
+                    <td>${transaction.balance}</td>
+                `;
+                transactionsTableBody.appendChild(row);
+            });
+
+            transactionModal.style.display = 'block';
+        }
+
+        function closeModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        document.querySelectorAll('.modal-close').forEach(closeButton => {
+            closeButton.addEventListener('click', () => {
+                const modal = closeButton.closest('.modal');
+                closeModal(modal);
+            });
+        });
+
+        window.addEventListener('click', event => {
+            const memberModal = document.getElementById('memberModal');
+            const transactionModal = document.getElementById('transactionModal');
+            if (event.target === memberModal) {
+                closeModal(memberModal);
+            } else if (event.target === transactionModal) {
+                closeModal(transactionModal);
+            }
+        });
+
+        document.getElementById('membersTable').addEventListener('click', event => {
+            const target = event.target.closest('tr');
+            if (target && target.dataset.member) {
+                const member = JSON.parse(target.dataset.member);
+                showMemberModal(member);
+            }
+        });
+
+        populateMembersTable();
+    </script>
+</body>
+</html>

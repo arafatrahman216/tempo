@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Details</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px 0;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            animation: fadeIn 0.5s;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .save-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-button:hover {
+            background-color: #0056b3;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+    <h1>Employee Details</h1>
+    <table id="employeeTable">
+        <thead>
+            <tr>
+                <th>Emp ID</th>
+                <th>Emp Name</th>
+                <th>Father's Name</th>
+                <th>Phone Number</th>
+                <th>Address</th>
+                <th>Main Salary</th>
+                <th>Members Under</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-info='{"empId": "E001", "empName": "John Doe", "fatherName": "Robert Doe", "phoneNumber": "123-456-7890", "address": "1234 Elm Street", "mainSalary": "5000", "membersUnder": "5"}'>
+                <td>E001</td>
+                <td>John Doe</td>
+                <td>Robert Doe</td>
+                <td>123-456-7890</td>
+                <td>1234 Elm Street</td>
+                <td>5000</td>
+                <td>5</td>
+            </tr>
+            <tr data-info='{"empId": "E002", "empName": "Tania", "fatherName": "Hasan", "phoneNumber": "123-456-7890", "address": "1234 Elm Street", "mainSalary": "10000", "membersUnder": "50"}'>
+                <td>E002</td>
+                <td>Tania</td>
+                <td>Hasan</td>
+                <td>123-456-7890</td>
+                <td>1234 Elm Street</td>
+                <td>10000</td>
+                <td>50</td>
+            </tr>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Employee Information</h2>
+            <input type="text" id="modalEmpId" disabled>
+            <input type="text" id="modalEmpName">
+            <input type="text" id="modalFatherName">
+            <input type="text" id="modalPhoneNumber">
+            <input type="text" id="modalAddress">
+            <input type="text" id="modalMainSalary">
+            <input type="text" id="modalMembersUnder">
+            <button class="save-button">Save</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = document.getElementById('employeeTable');
+            const modal = document.getElementById('employeeModal');
+            const closeModal = document.querySelector('.close');
+            const saveButton = document.querySelector('.save-button');
+
+            const modalEmpId = document.getElementById('modalEmpId');
+            const modalEmpName = document.getElementById('modalEmpName');
+            const modalFatherName = document.getElementById('modalFatherName');
+            const modalPhoneNumber = document.getElementById('modalPhoneNumber');
+            const modalAddress = document.getElementById('modalAddress');
+            const modalMainSalary = document.getElementById('modalMainSalary');
+            const modalMembersUnder = document.getElementById('modalMembersUnder');
+
+            let currentRow = null;
+
+            table.addEventListener('click', (e) => {
+                if (e.target && e.target.nodeName === "TD") {
+                    const row = e.target.closest('tr');
+                    const employeeInfo = JSON.parse(row.getAttribute('data-info'));
+
+                    modalEmpId.value = employeeInfo.empId;
+                    modalEmpName.value = employeeInfo.empName;
+                    modalFatherName.value = employeeInfo.fatherName;
+                    modalPhoneNumber.value = employeeInfo.phoneNumber;
+                    modalAddress.value = employeeInfo.address;
+                    modalMainSalary.value = employeeInfo.mainSalary;
+                    modalMembersUnder.value = employeeInfo.membersUnder;
+
+                    currentRow = row;
+                    modal.style.display = 'flex';
+                }
+            });
+
+            closeModal.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            saveButton.addEventListener('click', () => {
+                if (currentRow) {
+                    const updatedInfo = {
+                        empId: modalEmpId.value,
+                        empName: modalEmpName.value,
+                        fatherName: modalFatherName.value,
+                        phoneNumber: modalPhoneNumber.value,
+                        address: modalAddress.value,
+                        mainSalary: modalMainSalary.value,
+                        membersUnder: modalMembersUnder.value
+                    };
+
+                    currentRow.setAttribute('data-info', JSON.stringify(updatedInfo));
+                    currentRow.cells[1].textContent = updatedInfo.empName;
+                    currentRow.cells[2].textContent = updatedInfo.fatherName;
+                    currentRow.cells[3].textContent = updatedInfo.phoneNumber;
+                    currentRow.cells[4].textContent = updatedInfo.address;
+                    currentRow.cells[5].textContent = updatedInfo.mainSalary;
+                    currentRow.cells[6].textContent = updatedInfo.membersUnder;
+
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

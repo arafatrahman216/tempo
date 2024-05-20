@@ -105,7 +105,7 @@
 
         <div class="orderHistory-table">
             <h2 class="HeadLine">Your Order</h2>
-            <table class="table">
+            <table class="table table-hover table-striped">
                 <thead>
                     <tr>
                         <th>ORDER ID</th>
@@ -127,7 +127,13 @@
                                 <td><%= order.DELIVERY_STATUS %></td>
                                 <% if (order.DELIVERY_STATUS == "DELIVERED") { %>
                                     <td><a href="/user/<%= USER_ID %>/review/<%= order.ORDER_ID %>?productid=<%= order.PRODUCT_ID %>">
-                                        Review</a></td>
+                                    <% if (order.REVIEW_COUNT > 0) { %>
+                                        Edit Review
+                                    <% } else { %>
+                                        Review
+                                    <% } %>
+                                    
+                                    </a></td>
                                 <% } else { %>
                                     <td>Not Delivered</td>
                                 <% } %>

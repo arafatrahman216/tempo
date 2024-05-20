@@ -111,7 +111,7 @@
         <!-- Products Table -->
         <div class="orderPending-table">
             <h2 class="HeadLine">Pending Orders</h2>
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>Product Name</th>
@@ -141,10 +141,10 @@
                                     <%= orders.PAYMENT_TYPE %>
                                 </td>
                                 <td>
-                                    <span id="staticDeliveryStatus<%= orders.DELIVERY_STATUS %>">
+                                    <span id="staticDeliveryStatus-<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>">
                                         <%= orders.DELIVERY_STATUS %>
                                     </span>
-                                    <select name="deliveryStatus" id="deliveryStatus<%= orders.DELIVERY_STATUS %>"
+                                    <select name="deliveryStatus" id="deliveryStatus-<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>"
                                         style="display: none;">
                                         <option value="CANCELLED" <% if (orders.DELIVERY_STATUS==='CANCELLED' ) { %>
                                             selected <% } %>>CANCELLED</option>
@@ -157,10 +157,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <button id="okButton<%= orders.DELIVERY_STATUS %>" style="display: none;"
-                                        onclick="saveDeliveryStatus('<%= orders.DELIVERY_STATUS %>' , '<%= orders.ORDER_ID %>', '<%= orders.PRODUCT_ID %>' , '<%= orders.USER_ID %>' , '<%= orders.SHOP_ID %>' , '<%= orders.SHOP_NAME %>')">OK</button>
-                                    <button id="changeStatusButton<%= orders.DELIVERY_STATUS %>"
-                                        onclick="submitDeliveryStatus('<%= orders.DELIVERY_STATUS %>')">Change</button>
+                                    <button id="okButton-<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>" style="display: none;"
+                                        onclick="saveDeliveryStatus('<%= orders.DELIVERY_STATUS %>' , '<%= orders.ORDER_ID %>', '<%= orders.PRODUCT_ID %>' , '<%= orders.USER_ID %>' , '<%= orders.SHOP_ID %>' , '<%= orders.SHOP_NAME %>','<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>')">OK</button>
+                                    <button id="changeStatusButton-<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>"
+                                        onclick="submitDeliveryStatus('<%= orders.DELIVERY_STATUS %>','<%= orders.ORDER_ID %>-<%= orders.PRODUCT_ID %>')">Change</button>
                                 </td>
                                 <!-- Add more columns as needed -->
                             </tr>
@@ -181,25 +181,25 @@
 </body>
 
 <script>
-    function submitDeliveryStatus(DelStatus) {
+    function submitDeliveryStatus(DelStatus, buttonid) {
         console.log("Hello!");
-        const staticElement = document.getElementById(`staticDeliveryStatus${DelStatus}`);
-        const selectElement = document.getElementById(`deliveryStatus${DelStatus}`);
-        const okButton = document.getElementById(`okButton${DelStatus}`);
-        const changeStatusButton = document.getElementById(`changeStatusButton${DelStatus}`);
+        const staticElement = document.getElementById(`staticDeliveryStatus-${buttonid}`);
+        const selectElement = document.getElementById(`deliveryStatus-${buttonid}`);
+        const okButton = document.getElementById(`okButton-${buttonid}`);
+        const changeStatusButton = document.getElementById(`changeStatusButton-${buttonid}`);
 
         // Toggle visibility of select element and OK button
-        staticElement.style.display = 'none';
-        selectElement.style.display = 'inline-block';
-        okButton.style.display = 'inline-block';
-        changeStatusButton.style.display = 'none';
+        staticElement.style.display = 'none'; // Hide the static delivery status content
+        selectElement.style.display = 'inline-block'; // Show the select element
+        okButton.style.display = 'inline-block'; // Show the OK button
+        changeStatusButton.style.display = 'none'; // Hide the Change button
     }
 
-    function saveDeliveryStatus(DelStatus, ORDER_ID, PRODUCT_ID, USER_ID, SHOP_ID, SHOP_NAME) {
-        const staticElement = document.getElementById(`staticDeliveryStatus${DelStatus}`);
-        const selectElement = document.getElementById(`deliveryStatus${DelStatus}`);
-        const okButton = document.getElementById(`okButton${DelStatus}`);
-        const changeStatusButton = document.getElementById(`changeStatusButton${DelStatus}`);
+    function saveDeliveryStatus(DelStatus, ORDER_ID, PRODUCT_ID, USER_ID, SHOP_ID, SHOP_NAME, buttonid) {
+        const staticElement = document.getElementById(`staticDeliveryStatus-${buttonid}`);
+        const selectElement = document.getElementById(`deliveryStatus-${buttonid}`);
+        const okButton = document.getElementById(`okButton-${buttonid}`);
+        const changeStatusButton = document.getElementById(`changeStatusButton-${buttonid}`);
     
         // Hide the select element and OK button
         selectElement.style.display = 'none';
