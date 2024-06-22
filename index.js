@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const nodemailer = require('nodemailer');
+let otpStore = {};
 app.use(express.json());
 
 const axios = require('axios');
@@ -71,7 +73,73 @@ const {authorize, Seller_authorize,
     getUserToken} = require('./database/Query/LoginAuthorization');
  
 
+    const crypto = require('crypto');
+const SendmailTransport = require('nodemailer/lib/sendmail-transport');
+const Mail = require('nodemailer/lib/mailer');
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'domain',
+    port: 587,
+    secure: false,
+        auth: {
+            user: process.env.BASE_MAIL,
+            pass: process.env.BASE_MAIL_PASSWORD
+        }
+    });
  
+
+    app.post('/send-otp', async (req, res) => {
+        const email = req.body.email;
+        const otp = crypto.randomInt(100000, 999999).toString();
+    
+        // Store OTP with a timestamp
+        otpStore[email] = { otp, timestamp: Date.now() };
+    
+        const mailOptions = {
+            from: process.env.BASE_MAIL,
+            to: email,
+            subject: 'Your OTP Code',
+            text: `Your OTP code is ${otp}`
+        };
+        console.log(mailOptions);
+        console.log(otpStore[email]);
+        console.log(email);
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                
+                return res.status(500).send('Error sending OTP');
+            }
+            res.send('OTP sent');
+        });
+    });
+    
+    app.post('/verify-otp', (req, res) => {
+        const { email, otp } = req.body;
+    
+        if (!otpStore[email]) {
+            return res.status(400).send('OTP not found or expired');
+        }
+    
+        const storedOtp = otpStore[email].otp;
+        const storedTimestamp = otpStore[email].timestamp;
+    
+        // OTP valid for 5 minutes
+        if (Date.now() - storedTimestamp > 60 * 1000) {
+            delete otpStore[email];
+            return res.status(400).send('OTP expired');
+        }
+    
+        if (otp === storedOtp) {
+            delete otpStore[email];
+            return res.send('OTP verified');
+        } else {
+            return res.status(400).send('Invalid OTP');
+        }
+    });
+    app.get('/otpsender', (req, res) => {
+        res.render('otp');
+    }
+    );
 // omi's code
 
 // this route is used to go from any section to other section in profile sidebar pane
@@ -2101,7 +2169,7 @@ app.get('/admin/home', async (req, res) => {
     query = `SELECT P.PRODUCT_ID , P.PRODUCT_NAME , C.CATAGORY_NAME , P.PRICE , P.STOCK_QUANTITY , S.SHOP_NAME , P.PRODUCT_IMAGE,P.PROMO_CODE,
     (SELECT COUNT(*) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_COUNT,
     (SELECT NVL(ROUND(AVG(RATING),2),0) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS AVERAGE_RATING,
-    (SELECT COUNT(*) FROM ORDERS O WHERE O.PRODUCT_ID = P.PRODUCT_ID) AS ORDER_COUNT
+    (SELECT COUNT(*) FROM ORDERS O WHERE O.PRODUCT_ID = P.PRODUCT_ID AND O.DELIVERY_STATUS = 'DELIVERED') AS ORDER_COUNT
     FROM PRODUCTS P JOIN CATAGORY C ON P.CATAGORY_ID = C.CATAGORY_ID JOIN SELLER_USER S ON P.SHOP_ID = S.SHOP_ID ORDER BY P.PRODUCT_ID`;
     result = await db_query(query,[]);
     var products = result;
@@ -2109,7 +2177,10 @@ app.get('/admin/home', async (req, res) => {
     query = `SELECT * FROM CUSTOMER_USER ORDER BY USER_ID`;
     result = await db_query(query,[]);
     var customers = result;
-    query = `SELECT * FROM SELLER_USER ORDER BY SHOP_ID`;
+    query = `SELECT 
+    S.SHOP_ID, S.SHOP_NAME, S.PHONE, S.EMAIL, S.DESCRIPTION, S.SHOP_LOGO, S.TOTAL_REVENUE
+    , (SELECT COUNT(*) FROM PRODUCTS P WHERE P.SHOP_ID = S.SHOP_ID) AS PRODUCT_COUNT
+    FROM SELLER_USER S ORDER BY SHOP_ID`;
     result = await db_query(query,[]);
     var sellers = result;
     query = `SELECT * FROM ORDERS ORDER BY ORDER_ID`;

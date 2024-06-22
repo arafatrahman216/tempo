@@ -1,15 +1,16 @@
 const oracledb = require('oracledb');
 oracledb.outFormat= oracledb.OBJECT;
+require('dotenv').config();
 
 
 let connection=undefined;
 async function db_query(query , params){
     if(connection===undefined){
         connection = await oracledb.getConnection({
-            user: 'VMART_VENTURES',
-            password: '123',
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD, 
             // connectString: 'localhost/orcl'
-            connectString: 'localhost/oracle'
+            connectString: process.env.DB_CONNECTION_STRING
             
         });
         console.log("connected to database");
