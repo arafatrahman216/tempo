@@ -71,6 +71,23 @@ app.use(bodyParser.json());
 const {authorize, Seller_authorize,
     setUserToken,
     getUserToken} = require('./database/Query/LoginAuthorization');
+
+    const AuthToken = async (req, res, next) => {
+        const id= (req.params.userid);
+        const token1= await req.cookies.token;
+        log(req.cookies);
+        log(getUserToken(token1))
+        const token = getUserToken(token1);
+        console.log(token);
+    
+        if (token1===undefined || token1===null  ||token==null || token.id!=id )
+        {
+            res.redirect('/login');
+            return;
+    
+        }
+        next();
+    }
  
 
     const crypto = require('crypto');
@@ -222,7 +239,7 @@ app.post('/seller_authorize', async (req, res)=>
 
 // Customer User Account
  
-app.get('/user/:userid', async (req, res) => {
+app.get('/user/:userid', AuthToken,async (req, res) => {
  
     const query= `SELECT C.*, A.STREET_NAME, A.POSTAL_CODE , A.CITY, A.DIVISION, A.COUNTRY , (SELECT BALANCE FROM E_WALLET WHERE WALLET_ID = :userid) EWALLET
     FROM CUSTOMER_USER C JOIN ADDRESS A ON (C.USER_ID = A.USER_ID AND C.USER_ID = :userid)
@@ -281,7 +298,7 @@ app.get('/user/:userid', async (req, res) => {
 //     res.redirect('/user/'+req.params.userid);
 // });
  
-app.post('/user/:userid', async (req, res) => {
+app.post('/user/:userid',async (req, res) => {
  
     console.log("Profile Post");
  
@@ -359,20 +376,11 @@ app.post('/user/:userid', async (req, res) => {
 
 
 
-app.get('/user/:userid/search', async (req, res) => {
+app.get('/user/:userid/search',AuthToken, async (req, res) => {
 
     const token1= await req.cookies.token;
-    log(req.cookies);
-    log(getUserToken(token1))
     const token = getUserToken(token1);
-
-    if (token1===undefined || token1===null  ||token==null || token.id!=req.params.userid )
-    {
-        res.redirect('/login');
-        return;
-
-    }
-    console.log(token.name);
+    
     // console.log('get request');
     const name= (req.query.search);
     log(name);
@@ -398,7 +406,7 @@ app.get('/test', async (req, res) => {
 }   
 );
 
-app.get('/user/:userid/catagory/:catid', async (req, res) => {
+app.get('/user/:userid/catagory/:catid',AuthToken, async (req, res) => {
     const token1= await req.cookies.token;
     log(req.cookies);
     log(getUserToken(token1))
@@ -469,7 +477,7 @@ app.get('/user/:userid/catagory/:catid', async (req, res) => {
 // });
 
 
-app.get('/user/:userid/cart', async (req, res) => {
+app.get('/user/:userid/cart', AuthToken,async (req, res) => {
     console.log('get request cart');
     const id= (req.params.userid);
     let subquery= `SELECT SHOWCART(${id}) AS MAXIMUM FROM DUAL`;
@@ -521,7 +529,7 @@ app.post('/user/:userid/addCart/:productid', async (req, res) => {
     res.json({ productid: productid, success : true });
 });
 
-app.get('/user/:userid/deleteCart/:productid', async (req, res) => {
+app.get('/user/:userid/deleteCart/:productid', AuthToken,async (req, res) => {
     console.log('Cart Delete '+ req.params.userid + ' ' + req.params.productid);
     const productid= req.params.productid;
     const id= (req.params.userid);
@@ -557,7 +565,7 @@ app.post('/user/:userid/updateCart', async (req, res) => {
     });
 
 
-app.get('/user/:userid/confirmation', async (req, res) => {
+app.get('/user/:userid/confirmation', AuthToken,async (req, res) => {
         console.log('Confirmation Get');
         const orderid = req.query.orderid;
 
@@ -785,7 +793,7 @@ app.post('/user/:userid/cart', async (req, res) => {
 
 
 
-app.get('/user/:userid/review/:orderid', async (req, res) => {
+app.get('/user/:userid/review/:orderid', AuthToken,async (req, res) => {
     
     console.log('Review get');
     const userid= (req.params.userid);
@@ -839,19 +847,9 @@ app.get('/user/:userid/review/:orderid', async (req, res) => {
     
 });
 
-app.get('/delete/review/:orderid', async (req, res) => {
-    console.log('Review Delete');
-    const token1= await req.cookies.token;
-    log(req.cookies);
-    log(getUserToken(token1))
-    const token = getUserToken(token1);
-    if (token1===undefined || token1===null  ||token==null)
-    {
-        res.redirect('/login');
-        return;
-    }
+app.get('/delete/review/:orderid', AuthToken,async (req, res) => {
+    console.log('Review Delete');    
     const userid= token.id;
-
     console.log('Review Delete');
     const orderid = req.params.orderid;
     const productid = req.query.productid;
@@ -887,7 +885,7 @@ app.get('/product/:id/review', async (req, res) => {
 }
 );
 
-app.post('/user/:userid/review/:orderid', async (req, res) => {
+app.post('/user/:userid/review/:orderid',async (req, res) => {
     console.log('Review Post');
     const { rating, review, productid, type, image} = req.body;
     const userid= req.params.userid;
@@ -919,7 +917,7 @@ app.post('/user/:userid/review/:orderid', async (req, res) => {
  
 
 
-app.get('/user/:userid/product/:id', async (req, res) => {
+app.get('/user/:userid/product/:id', AuthToken,async (req, res) => {
     // console.log('get request');
     const id= (req.params.id);
     const userid= (req.params.userid);
@@ -944,7 +942,7 @@ app.get('/user/:userid/product/:id', async (req, res) => {
     
 });
 
-app.get('/user/:userid/search/product/:name', async (req, res) => {
+app.get('/user/:userid/search/product/:name', AuthToken,async (req, res) => {
     // console.log('get request');
     const name= (req.params.name);
     const result = await Search_products_by_name(name);
@@ -964,20 +962,11 @@ app.get('/user/:userid/search/product/:name', async (req, res) => {
 });
 
 
-app.get('/user/:userid/filter', async (req, res) => { 
+app.get('/user/:userid/filter', AuthToken,async (req, res) => { 
     
     const userid= (req.params.userid);
     const token1= await req.cookies.token;
-    log(req.cookies);
-    log(getUserToken(token1))
     const token = getUserToken(token1);
-
-    if (token1===undefined || token1===null  ||token==null || token.id!=userid )
-    {
-        res.redirect('/login');
-        return;
-
-    }
     console.log(token.name);
 
     console.log('get request filter');
@@ -1012,7 +1001,7 @@ app.get('/user/:userid/filter', async (req, res) => {
 });
 
 
-app.get('/order/:userid', async (req, res) => {
+app.get('/order/:userid', AuthToken,async (req, res) => {
  
     console.log('get request order');
     const userid= (req.params.userid);
@@ -1716,7 +1705,7 @@ app.post('/Password/:userId', async (req,res) => {
 // );
 
 // wishlist routing
-app.get('/wishlist/:userid', async (req, res) => {
+app.get('/wishlist/:userid', AuthToken,async (req, res) => {
      
         const query= `SELECT P.PRODUCT_ID , P.PRODUCT_NAME , (SELECT CATAGORY_NAME FROM CATAGORY C WHERE P.CATAGORY_ID = C.CATAGORY_ID ) AS CATAGORY ,P.PRICE , (SELECT PROFILE_PICTURE FROM CUSTOMER_USER CUS WHERE CUS.USER_ID = W.USER_ID) PROFILE_PICTURE
         FROM WISHLIST W JOIN PRODUCTS P ON W.PRODUCT_ID = P.PRODUCT_ID AND W.USER_ID = :userid`; 
@@ -1756,6 +1745,7 @@ app.post('/user/:userid/wishlist', async (req, res) =>{
     var query = `INSERT INTO WISHLIST VALUES(${userid} , ${productid})` ;
     console.log(query);
     var result = await db_query(query, []);
+    
     
 
     res.json({ productid: productid, userid: userid, success: false });
@@ -1954,7 +1944,7 @@ app.post('/removeWishlist/:userId/:productId', async (req, res) => {
 
 });
 
-app.get('/user/:userid/wishlistCount/:productid', async (req, res) => {
+app.get('/user/:userid/wishlistCount/:productid',AuthToken, async (req, res) => {
     const userId = req.params.userid;
 
     const query = `SELECT COUNT(*) AS WISHLIST_COUNT
@@ -1989,9 +1979,12 @@ app.get('/user/:userid/wishlistCount/:productid', async (req, res) => {
 
 
 
-app.get('/home/:userid', async (req, res) => {
+
+app.get('/home/:userid', AuthToken, async (req, res) => {
+    
     // console.log('get request');
     const id= (req.params.userid);
+    
     const query= `SELECT * FROM CUSTOMER_USER WHERE USER_ID=${id}`;
     const params=[];
     const result= await db_query(query,params);
@@ -1999,18 +1992,7 @@ app.get('/home/:userid', async (req, res) => {
     // console.log(user_name);
     const phone = result[0].PHONE;
     // console.log(phone);
-    const token1= await req.cookies.token;
-    log(req.cookies);
-    log(getUserToken(token1))
-    const token = getUserToken(token1);
-    console.log(token);
-
-    if (token1===undefined || token1===null  ||token==null || token.id!=id )
-    {
-        res.redirect('/login');
-        return;
-
-    }
+    
     const products = await axios.get(`http://localhost:5000/products/all`).then(response => {
         const products=response.data;
         const cat =  axios.get(`http://localhost:5000/categories`).then(response => {
@@ -2050,7 +2032,6 @@ app.get('/products/:id', async (req, res) => {
     const products = await set_products(result);
     // console.log(products);
     res.json(products);
-    return;
 });
 
 // app.post('/OrderTrack', async (req, res) => {
