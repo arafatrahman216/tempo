@@ -9,7 +9,7 @@ async function db_query(query , params){
         connection = await oracledb.getConnection({
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD, 
-            // connectString: 'localhost/orcl'
+            // to change connection string go to .env file and change the value of DB_CONNECTION_STRING
             connectString: process.env.DB_CONNECTION_STRING
             
         });

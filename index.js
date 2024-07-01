@@ -1,39 +1,20 @@
 const express = require('express');
 const app = express();
-const nodemailer = require('nodemailer');
-let otpStore = {};
-app.use(express.json());
 
-const { query, 
-    validationResult,
-    body
- } = require('express-validator');
+const oracledb = require('oracledb');
 
+const { query, validationResult, body } = require('express-validator');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
-// const router= express.Router();
-const session = require('express-session');
-app.use(express.urlencoded({ extended: true }));
+const bodyParser = require('body-parser');
 
 
 const db_query = require('./database/connection');
-
-
 const {
-    addCustomer,
-    query_checker, 
-    set_products,
-    Filter_Products,
-    get_products, 
-    Search_products_by_name,
-    get_user,
-    get_seller,
-    addSeller,
-    update_user,
-    set_seller,
+    addCustomer, query_checker, set_products, Filter_Products, 
+    get_products, Search_products_by_name, get_user, 
+    get_seller, addSeller, update_user, set_seller
 } = require('./database/Query/Customer_query');
-
-
 
 
 const path = require('path');
@@ -41,44 +22,34 @@ const { lowerCase, isNumber, result, get } = require('lodash');
 const { log } = require('console');
 
 
-// const UserRoute= require('./routes/User');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 app.set('views', 'public/pages/');
 app.use(express.static('./public'));  
-///////////////////////////////////////
-// app.use('/',router);
-app.use(express.json());
-
- 
-const oracledb = require('oracledb');
-
- 
-
-// omi's code 
-const bodyParser = require('body-parser');
 app.use(bodyParser.json());
- 
-const {authorize, Seller_authorize,
-    setUserToken,
-    getUserToken} = require('./database/Query/LoginAuthorization');
 
-    const AuthToken = async (req, res, next) => {
-        const id= (req.params.userid);
-        const token1= await req.cookies.token;
-        log(req.cookies);
-        log(getUserToken(token1))
-        const token = getUserToken(token1);
-        console.log(token);
-    
-        if (token1===undefined || token1===null  ||token==null || token.id!=id )
-        {
-            res.redirect('/login');
-            return;
-    
-        }
-        next();
+
+ 
+const {
+    authorize, Seller_authorize,
+    setUserToken, getUserToken
+    } = require('./database/Query/LoginAuthorization');
+
+    //
+const AuthToken = async (req, res, next) => {
+    const id= (req.params.userid);
+    const token1= await req.cookies.token;
+    const token = getUserToken(token1);    
+    if (token1===undefined || token1===null  ||token==null || token.id!=id )
+    {
+        res.redirect('/login');
+        return;
     }
+    req.jwttoken = token;
+    next();
+}
  
 
 // omi's code
@@ -88,7 +59,6 @@ app.get('/seller_authorize/:shopname/:shopid', async (req, res)=>
 {
     const shopname = req.params.shopname;
     const shopid = req.params.shopid;
-
     const query = `SELECT * 
     FROM SELLER_USER
     WHERE SHOP_ID = :shopid `;
@@ -250,27 +220,17 @@ app.post('/user/:userid',async (req, res) => {
         console.log('Error updating data:', error);
     }
 
-
     res.redirect('/user/'+req.params.userid);
-
-
 });
-
 
 
 app.get('/user/:userid/search',AuthToken, async (req, res) => {
 
-    const token1= await req.cookies.token;
-    const token = getUserToken(token1);
-    
-    // console.log('get request');
+    const token = req.jwttoken;
     const name= (req.query.search);
     log(name);
     const result = await Search_products_by_name(name);
     console.log(result);
-
-
-
     const products =  await set_products(result);
 
     res.render('Search', { products: products , userid: req.params.userid, Name: token.name});
@@ -281,16 +241,10 @@ app.get('/user/:userid/search',AuthToken, async (req, res) => {
 
 app.get('/test', async (req, res) => {
     res.render('Order');
-}   
-);
+});
 
 app.get('/user/:userid/catagory/:catid',AuthToken, async (req, res) => {
-    const token1= await req.cookies.token;
-    log(req.cookies);
-    log(getUserToken(token1))
-    const token = getUserToken(token1);
-    
-    // console.log('get request');
+    const token = req.jwttoken;
     const catid= (req.params.catid);
     const userid= (req.params.userid);
     var query= `SELECT * FROM PRODUCTS P LEFT JOIN CATAGORY C ON P.CATAGORY_ID=C.CATAGORY_ID JOIN SELLER_USER S ON S.SHOP_ID= P.SHOP_ID `
@@ -298,11 +252,8 @@ app.get('/user/:userid/catagory/:catid',AuthToken, async (req, res) => {
 
     const params=[];
     const result= await db_query(query,params);
-    
+
     const products =  await set_products(result);
-
-
-
     res.render('Search', { products: products , userid: userid, Name : token.name});
     return;
 }
@@ -324,7 +275,6 @@ app.get('/user/:userid/cart', AuthToken,async (req, res) => {
     const query= `SELECT * FROM CART C JOIN PRODUCTS P ON C.PRODUCT_ID=P.PRODUCT_ID WHERE USER_ID = ${id} AND CART_ID = ${cartid}`;
     const params=[];
     const result= await db_query(query,params);
-    // const products =  await set_products(result);
     let products = [];
     let total_cost=0;
     for (let i = 0; i < result.length; i++) {
@@ -1603,8 +1553,6 @@ app.get('/removeWishlist/:userId/:productId', async (req, res) => {
     };
 
     const result = await db_query(query, params);
-
-    // app.get('/wishlist/:userid', async (req, res) => {
     res.redirect('/wishlist/' + userId);
 
 });
@@ -1622,8 +1570,6 @@ app.post('/removeWishlist/:userId/:productId', async (req, res) => {
     };
 
     const result = await db_query(query, params);
-
-    // app.get('/wishlist/:userid', async (req, res) => {
     res.json({ success: true });
 
 });
@@ -1757,77 +1703,8 @@ app.post('/signup', async (req, res) => {
     res.redirect('/home/'+userid);
 });
 
-app.get('/admin/login', async (req, res) => {
-    console.log('get request');
-    res.render('ForgetPassword', { type: 'admin' });
-});
-
-app.post('/admin/login', async (req, res) => {
-    var email=req.body.name;
-    var password=req.body.password;
-    console.log(req.body);
-    if (email=='admin' && password=='admin')
-    {
-        res.json({ success: true });
-        return;
-    }
-    res.json({ success: false});
-    console.log('not ok');
-});
-
-app.get('/admin/home', async (req, res) => {
-    console.log('get request');
-    var query = `SELECT COUNT(*) AS TOTAL_SELLER FROM SELLER_USER`;
-    var result = await db_query(query,[]);
-    var total_seller= result[0].TOTAL_SELLER;
-    query = `SELECT COUNT(*) AS TOTAL_CUSTOMER FROM CUSTOMER_USER`;
-    result = await db_query(query,[]);
-    var total_customer= result[0].TOTAL_CUSTOMER;
-    query = `SELECT COUNT(*) AS TOTAL_PRODUCT FROM PRODUCTS`;
-    result = await db_query(query,[]);
-    var total_product= result[0].TOTAL_PRODUCT;
-    query = `SELECT COUNT(*) AS TOTAL_ORDER FROM ORDERS`;
-    result = await db_query(query,[]);
-    var total_order= result[0].TOTAL_ORDER;
-    query = `SELECT P.PRODUCT_ID , P.PRODUCT_NAME , C.CATAGORY_NAME , P.PRICE , P.STOCK_QUANTITY , S.SHOP_NAME , P.PRODUCT_IMAGE,P.PROMO_CODE,
-    (SELECT COUNT(*) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_COUNT,
-    (SELECT NVL(ROUND(AVG(RATING),2),0) FROM REVIEWS R WHERE R.PRODUCT_ID = P.PRODUCT_ID) AS AVERAGE_RATING,
-    (SELECT COUNT(*) FROM ORDERS O WHERE O.PRODUCT_ID = P.PRODUCT_ID AND O.DELIVERY_STATUS = 'DELIVERED') AS ORDER_COUNT
-    FROM PRODUCTS P JOIN CATAGORY C ON P.CATAGORY_ID = C.CATAGORY_ID JOIN SELLER_USER S ON P.SHOP_ID = S.SHOP_ID ORDER BY P.PRODUCT_ID`;
-    result = await db_query(query,[]);
-    var products = result;
-    // console.log(products);
-    query = `SELECT * FROM CUSTOMER_USER ORDER BY USER_ID`;
-    result = await db_query(query,[]);
-    var customers = result;
-    query = `SELECT 
-    S.SHOP_ID, S.SHOP_NAME, S.PHONE, S.EMAIL, S.DESCRIPTION, S.SHOP_LOGO, S.TOTAL_REVENUE
-    , (SELECT COUNT(*) FROM PRODUCTS P WHERE P.SHOP_ID = S.SHOP_ID) AS PRODUCT_COUNT
-    FROM SELLER_USER S ORDER BY SHOP_ID`;
-    result = await db_query(query,[]);
-    var sellers = result;
-    query = `SELECT * FROM ORDERS ORDER BY ORDER_ID`;
-    result = await db_query(query,[]);
-    var orders = result;
-    query = `SELECT * FROM LOG_TABLE ORDER BY CALL_TIME DESC`;
-    result 
-    = await db_query(query,[]);
-    var logs = result;
-    query= `SELECT COUNT(*) AS LOGTOTAL FROM LOG_TABLE`;
-    result = await db_query(query,[]);
-    var logtotal= result[0].LOGTOTAL;
-
-
-
-
-    res.render('AdminHome', { sellerno : total_seller, customerno: total_customer, productno: total_product, 
-        orderno: total_order, products: products , 
-        customers: customers, sellers: sellers , orders: orders, logs: logs, logno: logtotal});
-});
-
-
-
-
+const AdminRouter = require('./routes/Admin');
+app.use("/admin", AdminRouter);
 
 app.listen(5000, () => {
     console.log('Server on port 5000');
