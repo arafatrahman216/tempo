@@ -4,25 +4,16 @@ const nodemailer = require('nodemailer');
 let otpStore = {};
 app.use(express.json());
 
+const { query, 
+    validationResult,
+    body
+ } = require('express-validator');
+
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 // const router= express.Router();
 const session = require('express-session');
 app.use(express.urlencoded({ extended: true }));
-
-
-const http = require('http');
-const server= http.createServer(app);
-const { Server } = require("socket.io");
-const io= new Server(server);
-io.on('connection',(socket)=>
-{
-    socket.on('time',(time)=>
-    {
-        io.emit('update',time);
-    })
-}
-);
 
 
 const db_query = require('./database/connection');
@@ -90,73 +81,6 @@ const {authorize, Seller_authorize,
     }
  
 
-    const crypto = require('crypto');
-const SendmailTransport = require('nodemailer/lib/sendmail-transport');
-const Mail = require('nodemailer/lib/mailer');
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        host: 'domain',
-    port: 587,
-    secure: false,
-        auth: {
-            user: process.env.BASE_MAIL,
-            pass: process.env.BASE_MAIL_PASSWORD
-        }
-    });
- 
-
-    app.post('/send-otp', async (req, res) => {
-        const email = req.body.email;
-        const otp = crypto.randomInt(100000, 999999).toString();
-    
-        // Store OTP with a timestamp
-        otpStore[email] = { otp, timestamp: Date.now() };
-    
-        const mailOptions = {
-            from: process.env.BASE_MAIL,
-            to: email,
-            subject: 'Your OTP Code',
-            text: `Your OTP code is ${otp}`
-        };
-        console.log(mailOptions);
-        console.log(otpStore[email]);
-        console.log(email);
-        await transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                
-                return res.status(500).send('Error sending OTP');
-            }
-            res.send('OTP sent');
-        });
-    });
-    
-    app.post('/verify-otp', (req, res) => {
-        const { email, otp } = req.body;
-    
-        if (!otpStore[email]) {
-            return res.status(400).send('OTP not found or expired');
-        }
-    
-        const storedOtp = otpStore[email].otp;
-        const storedTimestamp = otpStore[email].timestamp;
-    
-        // OTP valid for 5 minutes
-        if (Date.now() - storedTimestamp > 60 * 1000) {
-            delete otpStore[email];
-            return res.status(400).send('OTP expired');
-        }
-    
-        if (otp === storedOtp) {
-            delete otpStore[email];
-            return res.send('OTP verified');
-        } else {
-            return res.status(400).send('Invalid OTP');
-        }
-    });
-    app.get('/otpsender', (req, res) => {
-        res.render('otp');
-    }
-    );
 // omi's code
 
 // this route is used to go from any section to other section in profile sidebar pane
@@ -255,48 +179,6 @@ app.get('/user/:userid', AuthToken,async (req, res) => {
     return;
 }
 );   
-
-// app.post('/user/:userid', async (req, res) => {
- 
-//     console.log("Profile Post");
- 
-//     // const query = `
-//     //     UPDATE CUSTOMER_USER 
-//     //     SET NAME = :name, PHONE = :phone, EMAIL = :email , PROFILE_PICTURE = :profilePic , GENDER = :gender
-//     //     WHERE USER_ID =:userid
-//     // `;
-
-// //     const query = `UPDATE CUSTOMER_USER 
-// //     SET NAME = ${req.body.name}, PHONE = ${req.body.phone}, EMAIL =  ${req.body.email}, PROFILE_PICTURE =  ${req.body.profilePic}, GENDER =  ${req.body.gender}
-// //     WHERE USER_ID = ${req.params.userid}
-// // `;
-
-//     const query = `UPDATE CUSTOMER_USER 
-//     SET NAME = \'${req.body.name}\', PHONE = \'${req.body.phone}\', EMAIL =  \'${req.body.email}\', PROFILE_PICTURE =  \'${req.body.profilePic}\', GENDER =  \'${req.body.gender}\'
-//     WHERE USER_ID = ${req.params.userid}
-// `;
-
-//     const params = {
-//         name: req.body.name,
-//         phone: req.body.phone,
-//         email: req.body.email,
-//         gender: req.body.gender,
-//         profilePic: req.body.profilePic,
-//         userid : req.params.userid
-//     };
-
-//     console.log(query);
-
- 
-//     try {  
-//         const result = await db_query(query, []);
-
-//     } catch (error) {
-//         console.error('Error updating data:', error);
-//     }
-
-//     res.redirect('/user/'+req.params.userid);
-// });
  
 app.post('/user/:userid',async (req, res) => {
  
@@ -388,11 +270,7 @@ app.get('/user/:userid/search',AuthToken, async (req, res) => {
     console.log(result);
 
 
-// if (result.length<1)
-// {   
-//     res.json({Product_error: '404'});
-//     return;
-// }
+
     const products =  await set_products(result);
 
     res.render('Search', { products: products , userid: req.params.userid, Name: token.name});
@@ -430,51 +308,6 @@ app.get('/user/:userid/catagory/:catid',AuthToken, async (req, res) => {
 }
 );
 
-
-//arafat
-// app.get('/user/:userid', async (req, res) => {
-
-//     console.log('get request');
-//     const id= (req.params.userid);
-//     console.log(id);
-//     const query= "SELECT * FROM CUSTOMER_USER WHERE USER_ID = "+ id;
-//     const params=[];
-//     const result= await db_query(query,params);
-//     if (result===undefined || result.length<1)
-//     {
-//         res.send(`<h1> User with id ${id} not found </h1>`);
-//         return;
-//     }
-//     // res.json(result);
-//     // return;
-//     const user_name=result[0].NAME;
-//     console.log(user_name);
-
-//     const phone = result[0].PHONE;
-//     console.log(phone);
-
-//     const Gender = result[0].GENDER ;
-//     res.render('profile', 
-//     {   Name: user_name, 
-//         Phone : phone ,
-//         userID: id, 
-//         gender : Gender,
-//         email : result[0].EMAIL, dob : result[0].DATE_OF_BIRTH
-//     });
-//     return;
-// });
-
-//arafat
-// app.post('/user/:userid', async (req, res) => {
- 
-//     console.log("Profile Post");
-//     const id= (req.params.userid);
-//     const name = req.body.name;
-//     const phone = req.body.phone;
-//     const email = req.body.email;
-//     update_user(id, name, email, phone);
-//     res.redirect(`/user/${req.params.userid}`);
-// });
 
 
 app.get('/user/:userid/cart', AuthToken,async (req, res) => {
@@ -763,38 +596,16 @@ app.post('/user/:userid/cart', async (req, res) => {
 });
  
 
-// app.get('/signup' , async(req ,res) => {
-//     res.render('signup');    
-// }); 
- 
-// app.post('/signup', async (req, res) => {
- 
-//     console.log(req.body);  
-//     const {name, e_mail,phone,password,gender,dob ,street, postal_code,city, division}= req.body;
-//     const userid= await addCustomer(name, e_mail,phone, password,gender,dob,street, postal_code,city, division);
-//     console.log('userid post signup');
-//     console.log(userid);
-//     res.render('home', { Name: req.body.name, Phone : req.body.phone , userID: req.body.userid, link: '/user/'+userid});
-// });
 
-// app.post('/user/:userid/product/:id/review', async (req, res) => {
-//     console.log('Review Post');
-//     const { rating, review } = req.body;
-//     const productid= req.params.id;
-//     const userid= req.params.userid;
-//     console.log(req.body);
-//     var query= `INSERT INTO REVIEWS (USER_ID, PRODUCT_ID, RATING, REVIEW) VALUES (${userid}, ${productid}, ${rating}, '${review}')`;
-//     const params=[];
-//     const result= await db_query(query,params);
-//     res.redirect(`/user/${userid}/o
-// }
-// );
-// app.get('')
+app.get('/user/:userid/review/:orderid', 
+    query('productid').isNumeric().withMessage('Product ID must be a number'),
+    AuthToken,async (req, res) => {
 
-
-
-app.get('/user/:userid/review/:orderid', AuthToken,async (req, res) => {
-    
+    const valid_result = validationResult(req);
+    if (!valid_result.isEmpty()) {
+        res.status(404).json({ errors: valid_result.errors[0].msg });
+        return;
+    }
     console.log('Review get');
     const userid= (req.params.userid);
     const orderid = req.params.orderid;
@@ -812,7 +623,8 @@ app.get('/user/:userid/review/:orderid', AuthToken,async (req, res) => {
     // console.log(prod_result);
     if (prod_result.length<1)
     {
-        res.send(`<h1> Product with id ${productid} not found </h1>`);
+        res.status(404).send(`<h1>Error 404 : Not Found
+            <br> Product with id ${productid} not found </h1>`);
         return;
     }
     const order = {
@@ -861,8 +673,10 @@ app.get('/delete/review/:orderid', AuthToken,async (req, res) => {
 });
 
 
-app.get('/product/:id/review', async (req, res) => {
+app.get('/product/:id/review',async (req, res) => {
     console.log('get request review');
+
+
     const id= (req.params.id);
     const userid= (req.params.userid);
     const query= `SELECT * FROM REVIEWS R JOIN CUSTOMER_USER C ON R.USER_ID=C.USER_ID WHERE PRODUCT_ID = ${id}`;
@@ -1174,76 +988,6 @@ app.get('/ShopOwnerSignup' , async(req ,res) => {
     res.render('ShopOwnerSignup');    
 });
  
-// app.post('/ShopOwnerSignup', async (req, res) => {
-
-//     const procedure = 'SignupInsertion';
-
-//     const query = `BEGIN ${procedure}(:shopname, :email, :phone, :password, :description, :street, :postal_code, :city, :division , :shoplogo) END`;
-    
-//     const params = {
-//         shopname: req.body.shopname,
-//         email: req.body.email,
-//         phone: req.body.phone,
-//         password: req.body.password,
-//         description: req.body.description,
-//         street: req.body.street,
-//         postal_code: req.body.postal_code,
-//         city: req.body.city,
-//         division: req.body.division,
-//         shoplogo: req.body.shoplogo
-//     }
-
-//     const result = await db_query(query, params);
-
-//     const query1 = `SELECT SHOP_ID FROM SELLER_USER WHERE EMAIL = :email`;  
-//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ';
-//     const params1 = {
-//         email: req.body.email
-//     }
-
-//     const result1 = await db_query(query1, params1);
-
-//     console.log(result1[0].SHOP_ID);
-    
-//     res.render('newShopOwnerProfile' , {SHOP_NAME: req.body.shopname , SHOP_ID: result1[0].SHOP_ID});
-// });
- 
-
-// app.post('/ShopOwnerSignup', async (req, res) => {
-
-//     const procedure = 'SignupInsertion';
-
-//     const query = `BEGIN ${procedure}(:shopname, :email, :phone, :password, :description, :street, :postal_code, :city, :division , :shoplogo) END`;
-    
-//     const params = {
-//         shopname: req.body.shopname,
-//         email: req.body.email,
-//         phone: req.body.phone,
-//         password: req.body.password,
-//         description: req.body.description,
-//         street: req.body.street,
-//         postal_code: req.body.postal_code,
-//         city: req.body.city,
-//         division: req.body.division,
-//         shoplogo: req.body.shoplogo
-//     }
-
-//     const result = await db_query(query, params);
-
-//     const query1 = `SELECT SHOP_ID FROM SELLER_USER WHERE EMAIL = :email`;
-
-//     const params1 = {
-//         email: req.body.email
-//     }
-
-//     const result1 = await db_query(query1, params1);
-
-//     console.log(result1[0].SHOP_ID);
-    
-//     res.render('newShopOwnerProfile', { SHOP_NAME: req.body.shopname, SHOP_ID: result1[0].SHOP_ID });
-// });   
-
-
 app.post('/ShopOwnerSignup', async (req, res) => {
 
     const procedure = 'SignupInsertion';
@@ -1292,18 +1036,6 @@ app.post('/ShopOwnerSignup', async (req, res) => {
 
 });
 
-    // const query1 = `SELECT SHOP_ID FROM SELLER_USER WHERE EMAIL = :email`;
-
-    // const params1 = {
-    //     email: req.body.email
-    // }
-
-    // const result1 = await db_query(query1, params1);
-
-    // console.log(result1[0].SHOP_ID);
-    
-    //res.render('newShopOwnerProfile', { SHOP_NAME: req.body.shopname, SHOP_ID: result1[0].SHOP_ID });
-//});  
 
 app.get('/addproducts/:shopname/:shopid', async (req, res) => {
     const shopname = req.params.shopname;
@@ -1338,13 +1070,6 @@ app.post('/addproducts/:shopname/:shopid', async (req, res) => {
     const maxProductId = maxProductIdResult[0].MAX_PRODUCT_ID + 1;
     console.log(maxProductId);
 
-    // const addDiscountQuery = `INSERT INTO DISCOUNTS (PROMO_CODE, DISCOUNT_AMOUNT, IS_EXPIRED) VALUES (:promoCode, :discount , 1)`;
-    // const params4 = {
-    //     promoCode: promoCode,
-    //     discount: discount
-    // };
-
-    // const DiscountQueryresult = await db_query(addDiscountQuery, params4);
     console.log(Category);
     const CategoryIdQuery = `SELECT CATAGORY_ID FROM CATAGORY WHERE CATAGORY_NAME = :Category`;
     const params2 = {
@@ -1663,47 +1388,6 @@ app.post('/Password/:userId', async (req,res) => {
 });
 
 
-// // order history routing
-// app.get('/order/:userid', async (req, res) => {
- 
-//     console.log('get request order');
-//     const userid= (req.params.userid);
-//     const query= `SELECT 
-//     O.ORDER_ID, O.DELIVERY_STATUS,
-//     P.PRODUCT_NAME,
-//     (
-//         SELECT 
-//             QUANTITY 
-//         FROM 
-//             CART C 
-//         WHERE 
-//             O.ORDER_ID = C.CART_ID 
-//             AND O.PRODUCT_ID = C.PRODUCT_ID
-//     ) AS QUANTITY,
-//     O.TOTAL_PRICE,
-//     O.PAYMENT_TYPE,
-//     (SELECT PROFILE_PICTURE FROM CUSTOMER_USER CUS WHERE O.USER_ID = CUS.USER_ID) AS PROFILE_PICTURE
-// FROM 
-//     ORDERS O 
-// JOIN 
-//     PRODUCTS P 
-// ON 
-//     O.PRODUCT_ID = P.PRODUCT_ID
-// WHERE 
-//      O.USER_ID = :userid
-// `; 
-
-//     const params = {
-//         userid: req.params.userid
-//     };
- 
-//     const orderHistory = await db_query(query,params); 
-//     console.log(orderHistory);
-//     res.render('customerOrderHistory', { USER_ID: req.params.userid , orderHistory: orderHistory });
-//     return;
-// }
-// );
-
 // wishlist routing
 app.get('/wishlist/:userid', AuthToken,async (req, res) => {
      
@@ -1965,21 +1649,6 @@ app.get('/user/:userid/wishlistCount/:productid',AuthToken, async (req, res) => 
 
 
 
-
-// app.post('/addproducts/:shopname/:shopid', async (req, res) => {
-
-//       const { productname, productDescrip, productPrice, productQuantity, promoCode } = req.body;
-//       const shopname = req.params.shopname;
-//       const shopid = req.params.shopid;
-
-//       console.log(req.body);
-
-//     }
-// );
-
-
-
-
 app.get('/home/:userid', AuthToken, async (req, res) => {
     
     // console.log('get request');
@@ -2033,33 +1702,6 @@ app.get('/products/:id', async (req, res) => {
     // console.log(products);
     res.json(products);
 });
-
-// app.post('/OrderTrack', async (req, res) => {
-//     const { userId } = req.body;
-//     console.log(req.body);
-
-//     const USER_ID = req.body.userId ;
-
-//     const query = `SELECT O.ORDER_ID , P.PRODUCT_NAME , (SELECT C.QUANTITY CART FROM CART C WHERE P.PRODUCT_ID=C.PRODUCT_ID ) QUANTITY ,O.TOTAL_PRICE , O.DELIVERY_STATUS , O.PAYMENT_TYPE
-//     FROM ORDERS O JOIN PRODUCTS P ON O.PRODUCT_ID = P.PRODUCT_ID
-//     WHERE O.USER_ID= :USER_ID AND O.ORDER_ID = (SELECT MAX(UNIQUE ORDER_ID) FROM ORDERS WHERE USER_ID = :USER_ID)` ;
-
-//     const params = {
-//         USER_ID: USER_ID
-//     };
-
-//     const lastOrderTrack = await db_query(query, params);
-
-//     console.log("Hi");
-
-//     res.render('OrderTrack', {OrderTrack : lastOrderTrack , USER_ID: USER_ID});
-
-// });
-
- 
-//     return;
-// });
-
 
 app.get('/login', async (req, res) => {
     console.log('get request');
