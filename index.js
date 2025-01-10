@@ -348,8 +348,8 @@ app.post('/user/:userid/updateCart', async (req, res) => {
     });
 
 
-app.get('/user/:userid/confirmation', AuthToken,async (req, res) => {
-        console.log('Confirmation Get');
+app.get('/user/:userid/confirmation',async (req, res) => {
+        console.log('Confirmation Get---');
         const orderid = req.query.orderid;
 
     const query = `SELECT 
@@ -367,6 +367,8 @@ app.get('/user/:userid/confirmation', AuthToken,async (req, res) => {
         FROM ORDERS O JOIN PRODUCTS P ON O.PRODUCT_ID=P.PRODUCT_ID JOIN SELLER_USER S ON S.SHOP_ID= P.SHOP_ID WHERE O.ORDER_ID = ${orderid}`;
         const params=[];
         const result= await db_query(query,params);
+        console.log('checking confirmation');
+        console.log(result);
         if ( result.length<1)
         {
             res.json({ success: false, order : {} });
@@ -433,6 +435,8 @@ app.get('/user/:userid/confirmation', AuthToken,async (req, res) => {
         console.log(result);
         var order = await axios.get(`http://localhost:5000/user/${id}/confirmation?orderid=${cartid}`).then(response => {
             const order=response.data.order;
+            console.log(cartid);
+            console.log(response.data);
             console.log(order);
             res.render('Order', { order: order , userid: id});
             return;
@@ -595,7 +599,7 @@ app.get('/user/:userid/review/:orderid',
     const query= `SELECT * FROM REVIEWS R WHERE USER_ID = ${userid} AND PRODUCT_ID = ${productid} AND REVIEW_ID = ${orderid}`;
     var result = await db_query(query,[]);
     console.log(result);
-    if (result.length<1 ||result === [])
+    if (result.length<1 )
     {
         res.render('review', { userid : userid, order:order, orderid: orderid, productid: productid, rating: 0, review: ' '})
         return;
